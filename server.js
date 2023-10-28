@@ -18,6 +18,8 @@ fastify.register(require("@fastify/autoload"), {
   dir: path.join(__dirname, "routes"),
 });
 
+fastify.register(require('@fastify/cors'))
+
 const start = async () => {
   await mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,

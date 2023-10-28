@@ -24,16 +24,33 @@ const signUpPost = {
         passwordUser: password,
       });
       const token = fastify.jwt.sign({
-        idUser: user._id,
+        loginUser: user.loginUser,
       });
 
-      return reply.send({ registered: true, token: token });
+      return reply.send({ registered: true, token: token , login: user.loginUser});
     } else {
-      return reply.code(403).send({ error: "user already registered" });
+      return reply.code(203).send({ error: "user already registered" });
     }
   },
 };
-
+const loginPost = {
+  method: "POST",
+  url: "/login",
+  handler: async (req, reply) => {
+    const fastify = req.server
+    const {login, password} = req.body
+    
+    const user = await User.findOne({loginUser: login})
+    console.log(req.body, user)
+    if(user.passwordUser === password){
+      const token = fastify.jwt.sign({
+        loginUser: user.loginUser,
+      });
+      return reply.code(200).send({token: token, login: user.loginUser})
+    }
+    return reply.code(203).send({message: "wrong data"})
+  }
+}
 const validateToken = {
   method: "GET",
   url: "/validateToken",
@@ -41,9 +58,9 @@ const validateToken = {
     console.log(req.headers);
     try {
       await req.jwtVerify();
-      return req.user;
+      reply.code(200).send({mesasage: "token is VALID"})
     } catch (err) {
-      reply.code(403).send({ message: "token is INVALID" });
+      reply.code(203).send({ message: "token is INVALID" });
     }
   },
 };
@@ -52,4 +69,5 @@ module.exports = async function (fastify, options) {
   fastify.route(testGet);
   fastify.route(signUpPost);
   fastify.route(validateToken);
+  fastify.route(loginPost)
 };
